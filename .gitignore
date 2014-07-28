@@ -1,0 +1,13 @@
+
+# directories built by asv run
+bin/
+conda-meta/
+env/
+html/
+include/
+lib/
+results/
+share/
+trackpy/
+
+*.pyc
