@@ -1,5 +1,6 @@
 import os
 
+import pandas as pd
 import trackpy as tp
 import pims
 
@@ -14,9 +15,8 @@ class WaterConfiguration(object):
         self.search_range_large = 10  # Sure to trigger subnet code
         self.linking_base_args = {'memory': 3}
 
-        # Load images into memory
-        self.images = list(pims.ImageSequence(
-            os.path.join(datadir, 'bulk_water', '*.png'), as_grey=True)[:20])
+        self.datadir = os.path.join(datadir, 'bulk_water')
+        self.nimages = 20
 
 
 class DenseConfiguration(object):
@@ -27,9 +27,8 @@ class DenseConfiguration(object):
         self.search_range_large = 4  # Sure to trigger subnet code
         self.linking_base_args = {}
 
-        # Load images into memory
-        self.images = list(pims.ImageSequence(
-            os.path.join(datadir, 'dense_sample', '*.png'), as_grey=True)[:5])
+        self.datadir = os.path.join(datadir, 'dense_sample')
+        self.nimages = 5
 
 
 class _SuiteBase(object):
@@ -48,6 +47,10 @@ class _SuiteBase(object):
         self.configure()
 
     def setup_features(self):
+        # Load images into memory
+        self.images = list(pims.ImageSequence(
+            os.path.join(self.datadir, '*.png'), as_grey=True)[:self.nimages])
+
         # Warm up FFTW and numba
         _ = tp.batch(self.images[:1], self.diameter, **self.feature_base_args)
 
@@ -57,7 +60,8 @@ class _SuiteBase(object):
         return tp.batch(self.images, self.diameter, **opts)
 
     def setup_linking(self):
-        self.features = self.find_features()
+        self.features = pd.read_hdf(os.path.join(
+            self.datadir, 'features.h5'), 'features')
         # Warm up numba by using a large search range,
         # to ensure that subnet code will be compiled.
         _ = tp.link_df(self.features[self.features.frame < 3],
