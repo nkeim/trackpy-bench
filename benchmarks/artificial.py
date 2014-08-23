@@ -12,10 +12,10 @@ class TimeSuite:
     of iterating over dictionaries in Python.
     """
     def setup(self):
-        shape = (100, 101)
+        shape = (1000, 1001)
         r = 3
         noise_level = 0.01
-        cases = {'sparse': 5, 'dense': 100}
+        cases = {'sparse': 10, 'dense': 10000}
         for case_name, count in cases.items():
             locations = gen_random_locations(shape, count)
             image = draw_spots(shape, locations, r, noise_level)
