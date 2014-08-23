@@ -11,8 +11,17 @@ class TimeSuite:
     An example benchmark that times the performance of various kinds
     of iterating over dictionaries in Python.
     """
+    timeout = 180
+
+    @classmethod
+    def run(cls, method_name):
+        """Run a single benchmark"""
+        sb = cls()
+        sb.setup()
+        getattr(sb, method_name)()
+
     def setup(self):
-        shape = (1000, 1001)
+        shape = (400, 401)
         r = 3
         noise_level = 0.01
         cases = {'sparse': 10, 'dense': 10000}
@@ -78,3 +87,6 @@ def maybe_permute_position(pos):
     elif ndim == 3:
         pos = np.asarray(pos)[[2, 1, 0]]
     return pos
+
+if __name__ == '__main__':
+    TimeSuite.run('time_locate_sparse')

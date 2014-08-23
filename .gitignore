@@ -12,3 +12,4 @@ trackpy/
 
 *.pyc
 data
+feature_log_*.yml

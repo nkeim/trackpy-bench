@@ -16,7 +16,7 @@ class WaterConfiguration(object):
 
         # Load images into memory
         self.images = list(pims.ImageSequence(
-            os.path.join(datadir, 'bulk_water', '*.png'), as_grey=True))
+            os.path.join(datadir, 'bulk_water', '*.png'), as_grey=True)[:20])
 
 
 class DenseConfiguration(object):
@@ -29,11 +29,21 @@ class DenseConfiguration(object):
 
         # Load images into memory
         self.images = list(pims.ImageSequence(
-            os.path.join(datadir, 'dense-sample', '*.tif'), as_grey=True))
+            os.path.join(datadir, 'dense_sample', '*.png'), as_grey=True)[:5])
 
 
 class _SuiteBase(object):
     """Perform feature-finding and linking on the "bulk_water" sample movie."""
+
+    timeout = 180
+
+    @classmethod
+    def run(cls, method_name):
+        """Run a single benchmark"""
+        sb = cls()
+        sb.setup()
+        getattr(sb, method_name)()
+
     def setup(self):
         self.configure()
 
@@ -42,7 +52,8 @@ class _SuiteBase(object):
         _ = tp.batch(self.images[:1], self.diameter, **self.feature_base_args)
 
     def find_features(self, **kwargs):
-        opts = self.feature_base_args.copy().update(kwargs)
+        opts = self.feature_base_args.copy()
+        opts.update(kwargs)
         return tp.batch(self.images, self.diameter, **opts)
 
     def setup_linking(self):
@@ -53,48 +64,50 @@ class _SuiteBase(object):
                        self.search_range_large, **self.linking_base_args)
 
     def link(self, **kwargs):
-        opts = self.linking_base_args.copy().update(kwargs)
+        opts = self.linking_base_args.copy()
+        opts.update(kwargs)
         return tp.link_df(self.features, self.search_range, **opts)
 
 
 class _FeatureBase(_SuiteBase):
     def setup(self):
-        super(WaterFeatureSuite, self).setup()
+        super(_FeatureBase, self).setup()
         self.setup_features()
 
     def time_numba(self):
         self.find_features(engine='numba')
 
-    def time_python(self):
-        self.find_features(engine='python')
-
 
 class _LinkingBase(_SuiteBase):
     def setup(self):
-        super(WaterLinkingSuite, self).setup()
+        super(_LinkingBase, self).setup()
         self.setup_linking()
 
     def time_numba(self):
-        self.link(link_strategy='numba')
-
-    def time_python(self):
-        self.link(link_strategy='recursive')
+        self.link()
 
 
 ###############
 # Actual suites
 
 class WaterFeatureSuite(_FeatureBase, WaterConfiguration):
-    pass
+    def time_python(self):
+        self.find_features(engine='python')
 
 
 class WaterLinkingSuite(_LinkingBase, WaterConfiguration):
-    pass
+    def time_python(self):
+        self.link(link_strategy='recursive')
 
 
 class DenseFeatureSuite(_FeatureBase, DenseConfiguration):
-    pass
+    pass  # Numba only
 
 
 class DenseLinkingSuite(_LinkingBase, DenseConfiguration):
-    pass
+    pass  # Numba only
+
+
+# For debugging
+if __name__ == '__main__':
+    DenseLinkingSuite.run('time_numba')
