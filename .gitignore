@@ -11,3 +11,4 @@ share/
 trackpy/
 
 *.pyc
+data
