@@ -10,6 +10,7 @@ results/
 share/
 trackpy/
 
+*.DS_Store
 *.pyc
-data
+data/*/features.h5
 feature_log_*.yml
