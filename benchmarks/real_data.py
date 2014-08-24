@@ -28,7 +28,7 @@ class DenseConfiguration(object):
         self.linking_base_args = {}
 
         self.datadir = os.path.join(datadir, 'dense_sample')
-        self.nimages = 5
+        self.nimages = 1
 
 
 class _SuiteBase(object):
