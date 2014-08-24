@@ -31,6 +31,7 @@
         "pandas": [],
         "scipy": [],
         "scikit-image": [],
+        "pytables": [],
         "pyyaml": []
     },
     // The directory (relative to the current directory) that benchmarks are
